@@ -7,7 +7,7 @@
     "path_fg": "#000000",
     "venv_bg": "#ED6A5A",
     "venv_fg": "#000000",
-    "git_bg": "#3C91E6",
+    "git_bg": "#39cd25",
     "git_fg": "#000000",
     "git_diverged": "#FFCC80",
     "git_ahead": "#B388FF",
