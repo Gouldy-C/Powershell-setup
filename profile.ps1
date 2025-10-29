@@ -1,5 +1,4 @@
 $script:debug_Override = $false
-
 function Get-Theme_Override {
     $ompConfigPath = Join-Path ([Environment]::GetFolderPath("MyDocuments")) "Powershell/my_layout.omp.json"
     if (-not (Test-Path $ompConfigPath)) {
