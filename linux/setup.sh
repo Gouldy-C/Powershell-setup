@@ -148,15 +148,52 @@ install_eza() {
         brew install eza
     elif [[ "$os" == "linux" ]] || [[ "$os" == "wsl" ]]; then
         if command -v apt-get &>/dev/null; then
-            sudo apt-get install -y eza 2>/dev/null || log_warn "eza not in apt. Install manually: https://github.com/eza-community/eza"
+            if sudo apt-get install -y eza 2>/dev/null; then
+                log_info "eza installed via apt."
+            else
+                install_eza_from_github
+            fi
         elif command -v dnf &>/dev/null; then
             sudo dnf install -y eza
         elif command -v pacman &>/dev/null; then
             sudo pacman -S --noconfirm eza
         else
-            log_warn "Install eza manually: https://github.com/eza-community/eza"
+            install_eza_from_github
         fi
     fi
+}
+
+# Fallback: install eza from GitHub releases (for Ubuntu versions without eza in apt)
+install_eza_from_github() {
+    log_info "Installing eza from GitHub releases..."
+    local arch
+    arch=$(uname -m)
+    local eza_arch=""
+    case "$arch" in
+        x86_64|amd64) eza_arch="x86_64-unknown-linux-gnu" ;;
+        aarch64|arm64) eza_arch="aarch64-unknown-linux-gnu" ;;
+        armv7l|armhf)  eza_arch="arm-unknown-linux-gnueabihf" ;;
+        *) log_warn "Unsupported architecture for eza: $arch. Install manually: https://github.com/eza-community/eza"; return 1 ;;
+    esac
+
+    local tmpdir
+    tmpdir=$(mktemp -d)
+    local url="https://github.com/eza-community/eza/releases/latest/download/eza_${eza_arch}.tar.gz"
+    if curl -sL "$url" -o "$tmpdir/eza.tar.gz" && tar xf "$tmpdir/eza.tar.gz" -C "$tmpdir"; then
+        local eza_bin
+        eza_bin=$(find "$tmpdir" -name "eza" -type f -executable 2>/dev/null | head -1)
+        if [[ -n "$eza_bin" ]]; then
+            sudo mkdir -p /usr/local/bin
+            sudo cp -f "$eza_bin" /usr/local/bin/eza
+            sudo chmod +x /usr/local/bin/eza
+            log_info "eza installed to /usr/local/bin"
+        else
+            log_warn "Could not find eza binary in archive. Install manually: https://github.com/eza-community/eza"
+        fi
+    else
+        log_warn "Could not download eza from GitHub. Install manually: https://github.com/eza-community/eza"
+    fi
+    rm -rf "$tmpdir"
 }
 
 # Install Nerd Fonts (Cascadia Code)
