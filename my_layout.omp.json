@@ -36,7 +36,7 @@
           },
           "leading_diamond": "\ue0b6",
           "trailing_diamond": "\ue0b0",
-          "template": "{{ .UserName }}@{{ .HostName }}",
+          "template": "{{ .UserName }}@{{ if .WSL }}wsl{{ else }}{{ .OS | lower }}{{ end }}",
           "foreground": "p:session_fg",
           "background": "p:session_bg",
           "type": "session",
