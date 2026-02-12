@@ -352,6 +352,22 @@ PROFILE_EOF
             log_info "Created ~/.bash_profile to source ~/.bashrc"
         fi
     fi
+
+    # Linux/WSL: ensure .bashrc is sourced from .profile for login shells
+    # WSL starts a login shell, so .profile is read - it must source .bashrc
+    if [[ "$(detect_os)" == "linux" ]] || [[ "$(detect_os)" == "wsl" ]]; then
+        if [[ -f "$HOME/.bash_profile" ]] && ! grep -qF '.bashrc' "$HOME/.bash_profile" 2>/dev/null; then
+            echo "" >> "$HOME/.bash_profile"
+            echo "[[ -f ~/.bashrc ]] && source ~/.bashrc" >> "$HOME/.bash_profile"
+            log_info "Added .bashrc source to ~/.bash_profile (WSL/login shells)"
+        fi
+        if [[ -f "$HOME/.profile" ]] && ! grep -qE '(\.bashrc|source.*bashrc)' "$HOME/.profile" 2>/dev/null; then
+            echo "" >> "$HOME/.profile"
+            echo "# Load .bashrc for interactive shells (required for WSL)" >> "$HOME/.profile"
+            echo "[[ -f ~/.bashrc ]] && . ~/.bashrc" >> "$HOME/.profile"
+            log_info "Added .bashrc source to ~/.profile (WSL/login shells)"
+        fi
+    fi
 }
 
 # Main
@@ -375,6 +391,9 @@ main() {
     log_info "Setup complete!"
     log_info "Restart your terminal or run: source ~/.bashrc"
     log_info "Set your terminal font to 'CaskaydiaCove Nerd Font' for full icon support."
+    if [[ "$(detect_os)" == "wsl" ]]; then
+        log_info "WSL: If theme doesn't show on new terminals, ensure ~/.profile sources ~/.bashrc (setup should have fixed this)"
+    fi
 }
 
 main "$@"
