@@ -92,16 +92,18 @@ $profileUrlFromRepo = "$repoRawBase/windows/Microsoft.PowerShell_profile.ps1"
 $profileUrlFallback = "https://github.com/ChrisTitusTech/powershell-profile/raw/main/Microsoft.PowerShell_profile.ps1"
 $profileNote = "If you want personal changes, use [$profileDir\Profile.ps1] - the installed profile uses a hash-based updater that overwrites direct edits."
 
-# When run via "irm | iex", $PSScriptRoot is empty - use remote downloads only
+# When run via "irm | iex", there is no script file - use remote downloads only
+# $MyInvocation.MyCommand.Path is empty when piped to iex (not $PSScriptRoot)
 $profileSource = $null
 $repoRoot = $null
-if ($PSScriptRoot -and ([string]::IsNullOrWhiteSpace($PSScriptRoot) -eq $false)) {
+$hasScriptPath = $MyInvocation.MyCommand.Path -and ([string]::IsNullOrWhiteSpace($MyInvocation.MyCommand.Path) -eq $false)
+if ($hasScriptPath) {
     try {
-        $scriptDir = $PSScriptRoot.Trim()
-        if ((Test-Path -LiteralPath $scriptDir -PathType Container -ErrorAction SilentlyContinue) -and
-            (Test-Path -LiteralPath (Join-Path $scriptDir "Microsoft.PowerShell_profile.ps1") -ErrorAction SilentlyContinue)) {
+        $scriptDir = Split-Path -Path $MyInvocation.MyCommand.Path -Parent -ErrorAction Stop
+        $profilePath = Join-Path -Path $scriptDir -ChildPath "Microsoft.PowerShell_profile.ps1"
+        if (Test-Path -LiteralPath $profilePath -ErrorAction SilentlyContinue) {
+            $profileSource = $profilePath
             $repoRoot = Split-Path -Path $scriptDir -Parent -ErrorAction Stop
-            $profileSource = Join-Path -Path $scriptDir -ChildPath "Microsoft.PowerShell_profile.ps1"
         }
     }
     catch {
