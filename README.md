@@ -13,7 +13,7 @@ A comprehensive PowerShell profile configuration that enhances your command-line
 │   └── Microsoft.PowerShell_profile.ps1   # Reference copy of main profile
 ├── linux/             # Linux / macOS / WSL / Bash
 │   ├── setup.sh       # Bash installer
-│   ├── bashrc         # Main bash profile
+│   ├── bashrc         # Main bash profile (hash-based auto-update)
 │   └── profile.bash   # User override template
 ├── my_layout.omp.json # Shared Oh My Posh theme (used by both)
 └── README.md
@@ -115,7 +115,9 @@ function Clear-Cache_Override {
 
 ### Bash Customization
 
-Edit `~/.config/bash/profile.bash` (or `$XDG_CONFIG_HOME/bash/profile.bash`) to add your own aliases and overrides:
+Edit `~/.config/bash/profile.bash` (or `$XDG_CONFIG_HOME/bash/profile.bash`) to add your own aliases and overrides. This file is never overwritten by updates.
+
+**Bash auto-update** (mirrors PowerShell): Hash-based check every 7 days (configurable). Call `update_bashrc` manually anytime. Override via `profile.bash`: `repo_root_Override`, `updateInterval_Override` (-1 = always), `timeFilePath_Override`, `debug_Override` (skip checks).
 
 ```bash
 # Custom aliases
